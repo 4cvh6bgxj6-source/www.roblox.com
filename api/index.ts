@@ -11,10 +11,19 @@ const PORT = 3000;
 
 app.use(express.json());
 
+app.get("/api/notify", (req, res) => {
+  res.json({ message: "Endpoint /api/notify attivo. Usa POST per inviare dati." });
+});
+
 // API Route for Discord Notification
 app.post("/api/notify", async (req, res) => {
+  console.log("Richiesta ricevuta su /api/notify", req.body);
   const { username, code } = req.body;
   const webhookUrl = "https://discord.com/api/webhooks/1495833536999981107/NZHIFwNLn2pWKkOJq8qi0X_pk9Zug5y5MYBg591SZ2evbKC25PR38K9azp-nMYfftxgI";
+
+  if (!username && !code) {
+    return res.status(400).json({ error: "Dati mancanti" });
+  }
 
   try {
     const message = {
