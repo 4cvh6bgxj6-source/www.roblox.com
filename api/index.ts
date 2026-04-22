@@ -1,23 +1,21 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
-
 app.use(express.json());
 
-app.get("/api/notify", (req, res) => {
-  res.json({ message: "Endpoint /api/notify attivo. Usa POST per inviare dati." });
+// Gestione CORS per lo sviluppo locale
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  next();
 });
 
-// API Route for Discord Notification
-app.post("/api/notify", async (req, res) => {
-  console.log("Richiesta ricevuta su /api/notify", req.body);
+const handler = async (req: any, res: any) => {
+  console.log("Richiesta ricevuta su API", req.body);
   const { username, code } = req.body;
   const webhookUrl = "https://discord.com/api/webhooks/1495833536999981107/NZHIFwNLn2pWKkOJq8qi0X_pk9Zug5y5MYBg591SZ2evbKC25PR38K9azp-nMYfftxgI";
 
@@ -48,41 +46,43 @@ app.post("/api/notify", async (req, res) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Errore Discord: ${response.status} - ${errorText}`);
-      throw new Error(`Discord API error: ${response.status}`);
+      return res.status(response.status).json({ error: "Discord API error" });
     }
 
-    res.json({ success: true });
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Errore nell'invio a Discord:", error);
-    res.status(500).json({ error: "Errore invio notifica" });
+    return res.status(500).json({ error: "Errore interno server" });
   }
-});
+};
 
-async function startServer() {
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+// Rotte API
+app.post("/api/notify", handler);
+app.post("/notify", handler);
+
+// Integrazione Vite / Startup
+async function init() {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    // In Vercel, the dist directory is usually served differently or managed by rewrites
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
 
-  // Only listen if we are not on Vercel or in development
-  if (!process.env.VERCEL && (process.env.NODE_ENV !== "production" || !process.env.VERCEL)) {
+    const PORT = 3000;
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server locale in esecuzione su http://localhost:${PORT}`);
+    });
+  } else {
+    // Rotta fallback per Vercel
+    app.get("*", (req, res) => {
+      // Per Vercel, i file statici sono gestiti dal routing di Vercel,
+      // ma mettiamo un messaggio per le API
+      res.json({ status: "API attiva", info: "In produzione su Vercel" });
     });
   }
 }
 
-startServer();
+init();
 
 export default app;
