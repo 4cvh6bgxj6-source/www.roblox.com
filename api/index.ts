@@ -58,6 +58,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
+    // In Vercel, the dist directory is usually served differently or managed by rewrites
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
@@ -65,7 +66,8 @@ async function startServer() {
     });
   }
 
-  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  // Only listen if we are not on Vercel or in development
+  if (!process.env.VERCEL && (process.env.NODE_ENV !== "production" || !process.env.VERCEL)) {
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
