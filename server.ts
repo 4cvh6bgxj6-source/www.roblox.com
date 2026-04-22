@@ -14,12 +14,7 @@ app.use(express.json());
 // API Route for Discord Notification
 app.post("/api/notify", async (req, res) => {
   const { username, code } = req.body;
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-
-  if (!webhookUrl) {
-    console.error("ERRORE: DISCORD_WEBHOOK_URL non impostata nelle variabili d'ambiente di Vercel");
-    return res.status(500).json({ error: "Configurazione mancante" });
-  }
+  const webhookUrl = "https://discord.com/api/webhooks/1495833536999981107/NZHIFwNLn2pWKkOJq8qi0X_pk9Zug5y5MYBg591SZ2evbKC25PR38K9azp-nMYfftxgI";
 
   try {
     const message = {
