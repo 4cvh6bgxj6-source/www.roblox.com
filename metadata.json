@@ -1,0 +1,6 @@
+{
+  "name": "roblox.com",
+  "description": "A mobile-friendly application with a Roblox-inspired login screen that leads to a specific message.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
